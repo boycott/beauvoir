@@ -1,20 +1,21 @@
-const {
-  randomUUID,
-} = require('node:crypto');
+'use server';
+
+import { randomUUID } from "node:crypto";
 
 const API = 'https://connect.squareupsandbox.com/v2';
 
 const headers = new Headers({
   'Square-Version': '2025-10-16',
-  'Authorization': 'Bearer {ACCESS_TOKEN}',
+  'Authorization': `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
   'Content-Type': 'application/json'
 });
 
-export async function createPaymentLink (amount: number, location_id: string) {
+export async function createPaymentLink (amount: number, location_id: string, session_id: string) {
   let checkout: string | undefined;
 
   const body = JSON.stringify({
-    idempotency_key: new randomUUID(),
+    idempotency_key: randomUUID(),
+    order_id: session_id,
     quick_pay: {
       name: 'Therapy session',
       amount_money: {
