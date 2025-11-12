@@ -10,10 +10,29 @@ export type Session = {
   cost: number;
   paid: boolean;
   attendance: string;
+  location_id: string;
 };
 
 export type SessionWithLink = Session & {
   custom_participant_id: string;
+}
+
+export const getSession = async (id: string) => {
+  let session: Session | undefined;
+
+  try {
+    const supabase = await createClient();
+
+    const { error, data } = await supabase.from('Session').select().eq('id', id).limit(1);
+
+    if (error) throw new Error(error.message);
+
+    if (data.length) session = data[0] as Session;
+  } catch (e) {
+    console.error(e);
+  }
+
+  return session;
 }
 
 export const getSessions = async (user_id: string) => {
