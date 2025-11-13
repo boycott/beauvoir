@@ -9,18 +9,20 @@ export default async function Page({ params }: { params: { session_id: string } 
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/auth/login");
-  }
+  if (!user) redirect("/auth/login");
 
-  const session = await getSession(params.session_id);
+  try {
+    const session = await getSession(params.session_id);
 
-  if (session) {
-    const payment_link = await createPaymentLink(session.cost, session.location_id, session.id);
+    if (!session) throw new Error('No session found');
 
-    if (payment_link) {
-      redirect(payment_link);
-    }
+    const payment_link = await createPaymentLink(session.cost, session.id);
+
+    if (!payment_link) throw new Error('No payment link found');
+
+    redirect(payment_link);
+  } catch (e) {
+    console.error(e);
   }
 
   return (
