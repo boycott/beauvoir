@@ -10,7 +10,7 @@ export async function POST (req: NextRequest) {
     if (payment.status === 'COMPLETED') {
       const supabase = await createClient();
 
-      const { error } = await supabase.from('Session').update({ paid: true }).eq('id', payment.order_id);
+      const { error } = await supabase.from('Session').update({ paid: true }).eq('order_id', payment.order_id);
 
       if (error) {
         console.error(error);

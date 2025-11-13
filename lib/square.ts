@@ -1,6 +1,7 @@
 'use server';
 
 import { randomUUID } from "node:crypto";
+import { createClient } from '@/lib/supabase/server';
 
 const API = process.env.NEXT_PUBLIC_SQUARE_API;
 
@@ -15,10 +16,10 @@ export async function createPaymentLink (amount: number, session_id: string) {
 
   const body = JSON.stringify({
     idempotency_key: randomUUID(),
-    order_id: session_id,
+    description: session_id,
     quick_pay: {
-      name: 'Therapy session',
-      amount_money: {
+      name: 'Therapy Session',
+      price_money: {
         amount,
         currency: "GBP"
       },
@@ -38,7 +39,15 @@ export async function createPaymentLink (amount: number, session_id: string) {
 
   if (error) throw new Error(error.detail);
 
-  if (payment_link) checkout = payment_link.long_url;
+  if (payment_link) {
+    const supabase = await createClient();
+
+    const { error } = await supabase.from('Session').update({ order_id: payment_link.order_id }).eq('id', session_id).limit(1);
+
+    if (error) throw new Error(error.message);
+
+    checkout = payment_link.long_url;
+  }
 
   return checkout;
 }
